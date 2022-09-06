@@ -3,7 +3,7 @@ require(caret)
 require(e1071)
 require(stringr)
 require(arulesCBA) #discretizar
-require(FSelector) #Ganancia de información
+require(FSelector) #Ganancia de informaciÃ³n
 require(lmtest)
 
 StratifiedCV_AnalysisFS <- function(X, Y, ngenes, fs, sub_fs="backward", clasif, L, lfc = 2, cov = 2, balanced=F, after=F,down=F){
@@ -31,12 +31,12 @@ StratifiedCV_AnalysisFS <- function(X, Y, ngenes, fs, sub_fs="backward", clasif,
       YTrnCV <- up_train$Class
     }
     
-    DEGsInfo <- DEGsExtraction(t(XTrnCV), make.names(YTrnCV), lfc = lfc, cov = cov, pvalue = 0.001)
+    DEGsInfo <- DEGsExtraction(t(XTrnCV), YTrnCV, lfc = lfc, cov = cov, pvalue = 0.001)
     DEGsMatrix <- DEGsInfo$DEG_Results$DEGs_Matrix
     MLMatrix <- t(DEGsMatrix)
     
     
-    # Selección de características  
+    # SelecciÃ³n de caracterÃ­sticas  
     if(fs=="mrmr"){
       FSRanking <- featureSelection(MLMatrix, YTrnCV, mode = "mrmr", vars_selected = colnames(MLMatrix))
       first10genes_perfold[[j]] <- names(FSRanking[1:ngenes])
@@ -57,7 +57,7 @@ StratifiedCV_AnalysisFS <- function(X, Y, ngenes, fs, sub_fs="backward", clasif,
       datos <- cbind(MLMatrix,YTrnCV)
       datos <- data.frame(datos)
       datos$YTrnCV <- as.factor(datos$YTrnCV)
-      colnames(datos)<-make.names(colnames(datos))
+  
       
       GENESperGO_split <- unique(GENESperGO_split)
       Num.GOs <- length(GENESperGO_split)
@@ -68,9 +68,9 @@ StratifiedCV_AnalysisFS <- function(X, Y, ngenes, fs, sub_fs="backward", clasif,
             modelFULL<-list()
             list_compared<-list()
             model_reduced<-list()
-            myformula <- as.formula(paste("YTrnCV ~ ", paste(make.names(GENESperGO_split[[i]]), collapse = " + ")))
+            myformula <- as.formula(paste("YTrnCV ~ ", paste(GENESperGO_split[[i]], collapse = " + ")))
             modelFULL <- nnet::multinom(myformula, data = datos, trace = FALSE)
-            model_reduced<-lapply(make.names(GENESperGO_split[[i]]), function(j) update(modelFULL,as.formula(paste(".~.-", j))))
+            model_reduced<-lapply(GENESperGO_split[[i]], function(j) update(modelFULL,as.formula(paste(".~.-", j))))
             list_compared<-lapply(model_reduced,function(j) lrtest(modelFULL,j))
             pvalores <- sapply(list_compared, "[[",2,5) #pvalores de los distintos test enfrentados
             pos <- which.max(pvalores)
@@ -87,7 +87,7 @@ StratifiedCV_AnalysisFS <- function(X, Y, ngenes, fs, sub_fs="backward", clasif,
           while (s<2 & min(pvalores)<0.0001 & length(GENESperGO_split[[i]])>0){
             list_compared<-list()
             model_reduced<-list()
-            model_reduced<-lapply(make.names(GENESperGO_split[[i]]), function(j) update(model_one,as.formula(paste(".~.+", j))))
+            model_reduced<-lapply(GENESperGO_split[[i]], function(j) update(model_one,as.formula(paste(".~.+", j))))
             list_compared<-lapply(model_reduced,function(j) lrtest(j,model_one))
             pvalores <- sapply(list_compared, "[[",2,5)
             pos <- which.min(pvalores)
@@ -102,7 +102,7 @@ StratifiedCV_AnalysisFS <- function(X, Y, ngenes, fs, sub_fs="backward", clasif,
       genes_selected <- c()
       model_one <- nnet::multinom(YTrnCV ~1, data = datos, trace = FALSE)
       for (i in 1:ngenes) {
-        model_reduced<-lapply(make.names(genes_selected0), function(j) update(model_one,as.formula(paste(".~.+", j))))
+        model_reduced<-lapply(genes_selected0, function(j) update(model_one,as.formula(paste(".~.+", j))))
         test_compared <- lapply(model_reduced,function(j) lrtest(j,model_one))
         pvalores <- sapply(test_compared, "[[",2,5)
         pos <- which.min(pvalores)
@@ -214,7 +214,7 @@ StratifiedCV_AnalysisFS <- function(X, Y, ngenes, fs, sub_fs="backward", clasif,
     j <- j+1
   }
   
-  #Analizamos  el rendimiento de nuestra clasificación:
+  #Analizamos  el rendimiento de nuestra clasificaciÃ³n:
   for (i in seq(1:(ngenes-1))){
     confMatrix <- confusionMatrix(as.factor(prediction[i,]), Y)
     suma = apply(confMatrix[[4]][,c(1,3)], 1, sum)
