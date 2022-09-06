@@ -2,8 +2,8 @@ require(KnowSeq)
 require(caret)
 require(e1071)
 require(stringr)
-require(arulesCBA) #discretizar
-require(FSelector) #Ganancia de información
+require(arulesCBA) 
+require(FSelector) 
 require(lmtest)
 
 StratifiedCV_AnalysisFS <- function(X, Y, ngenes, fs, sub_fs="backward", clasif, L, lfc = 2, cov = 2, balanced=F, after=F,down=F){
